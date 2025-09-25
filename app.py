@@ -10,7 +10,7 @@ DB_PATH = "datamoney_demo.db"
 
 # --- Page & sidebar ---
 st.set_page_config(layout="wide")
-st.sidebar.header("Controls")
+st.sidebar.header("Settings")
 
 # Custom CSS to remove padding and margins from Streamlit's main container and to set the Ag-Grid height
 st.markdown(
@@ -61,7 +61,7 @@ selected_lookback_date = None
 
 if mode == "Daily" or mode == "Weekly":
     selected_date = st.sidebar.date_input(
-        "Select Current Date",
+        "Select Current Period",
         value=date_max,
         min_value=date_min,
         max_value=date_max
@@ -72,7 +72,7 @@ if mode == "Daily" or mode == "Weekly":
     # Lookback period selector
     lookback_option = st.sidebar.selectbox(
         "Select Lookback Period",
-        ("7 Days", "1 Month", "3 Months", "6 Months", "1 Year", "All Time", "Custom")
+        ("7 Days", "2 Weeks", "1 Month", "3 Months", "6 Months", "1 Year", "All Time", "Custom")
     )
     if lookback_option == "All Time":
         selected_lookback_date = date_min
@@ -86,6 +86,7 @@ if mode == "Daily" or mode == "Weekly":
     else:
         days_map = {
             "7 Days": 7,
+            "2 Weeks": 14,
             "1 Month": 30,
             "3 Months": 90,
             "6 Months": 180,
@@ -288,13 +289,13 @@ pct_style = JsCode("""
 
 
 # Configure the columns
-gb.configure_column("Artist", filter=True, sortable=True)
-gb.configure_column("US Streams", header_name="Streams 🇺🇸", type=['numericColumn', 'numberColumnFilter'], precision=0, agg_func='sum', valueFormatter=number_formatter)
-gb.configure_column("US Streams Prev", header_name="Streams Prev 🇺🇸", type=['numericColumn', 'numberColumnFilter'], precision=0, agg_func='sum', valueFormatter=number_formatter)
-gb.configure_column("% Change US", header_name="% Change 🇺🇸", type=['numericColumn', 'numberColumnFilter'], valueFormatter=pct_formatter, cellStyle=pct_style, sort="desc")
-gb.configure_column("Global Streams", header_name="Streams 🌎", type=['numericColumn', 'numberColumnFilter'], precision=0, agg_func='sum', valueFormatter=number_formatter)
-gb.configure_column("Global Streams Prev", header_name="Streams Prev 🌎", type=['numericColumn', 'numberColumnFilter'], precision=0, agg_func='sum', valueFormatter=number_formatter)
-gb.configure_column("% Change Global", header_name="% Change 🌎", type=['numericColumn', 'numberColumnFilter'], valueFormatter=pct_formatter, cellStyle=pct_style)
+gb.configure_column("Artist", filter="agTextColumnFilter", sortable=True)
+gb.configure_column("US Streams", header_name="🇺🇸 Current Streams", type=['numericColumn', 'numberColumnFilter'], precision=0, agg_func='sum', valueFormatter=number_formatter)
+gb.configure_column("US Streams Prev", header_name="🇺🇸 Previous Streams", type=['numericColumn', 'numberColumnFilter'], precision=0, agg_func='sum', valueFormatter=number_formatter)
+gb.configure_column("% Change US", header_name="🇺🇸 % Change", type=['numericColumn', 'numberColumnFilter'], valueFormatter=pct_formatter, cellStyle=pct_style, sort="desc")
+gb.configure_column("Global Streams", header_name="🌎 Current Streams", type=['numericColumn', 'numberColumnFilter'], precision=0, agg_func='sum', valueFormatter=number_formatter)
+gb.configure_column("Global Streams Prev", header_name="🌎 Previous Streams", type=['numericColumn', 'numberColumnFilter'], precision=0, agg_func='sum', valueFormatter=number_formatter)
+gb.configure_column("% Change Global", header_name="🌎 % Change", type=['numericColumn', 'numberColumnFilter'], valueFormatter=pct_formatter, cellStyle=pct_style)
 
 # Set grid options with a normal domLayout (which includes a scrollbar)
 gb.configure_grid_options(domLayout='normal')
@@ -308,7 +309,7 @@ AgGrid(
     allow_unsafe_jscode=True,
     update_mode=GridUpdateMode.MODEL_CHANGED,
     data_return_mode=DataReturnMode.FILTERED_AND_SORTED,
-    columns_auto_size_mode=ColumnsAutoSizeMode.FIT_CONTENTS,
+    columns_auto_size_mode=ColumnsAutoSizeMode.FIT_ALL_COLUMNS_TO_VIEW,
     height=700,
     key="aggrid_key"
 )
