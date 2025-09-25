@@ -51,22 +51,22 @@ except Exception as e:
 
 # --- Sidebar controls ---
 mode = st.sidebar.selectbox(
-    "Select Mode",
-    ("Daily", "Weekly", "Monthly", "Yearly")
+    "Select Metric",
+    ("Daily Streams", "Weekly Streams", "Monthly Streams", "Yearly Streams")
 )
 
 # --- Dynamic date selector based on mode ---
 selected_date = None
 selected_lookback_date = None
 
-if mode == "Daily" or mode == "Weekly":
+if mode == "Daily Streams" or mode == "Weekly Streams":
     selected_date = st.sidebar.date_input(
         "Select Current Period",
         value=date_max,
         min_value=date_min,
         max_value=date_max
     )
-    if mode == "Weekly":
+    if mode == "Weekly Streams":
         st.sidebar.caption("The entire week (Sun-Sat) containing this date will be selected.")
 
     # Lookback period selector
@@ -95,7 +95,7 @@ if mode == "Daily" or mode == "Weekly":
         days = days_map.get(lookback_option, 7)
         selected_lookback_date = selected_date - timedelta(days=days)
 
-elif mode == "Monthly":
+elif mode == "Monthly Streams":
     selected_month_str = st.sidebar.selectbox(
         "Select Current Month",
         options=all_months
@@ -111,7 +111,7 @@ elif mode == "Monthly":
     )
     selected_lookback_date = pd.to_datetime(lookback_month_str, format='%B %Y').date()
 
-elif mode == "Yearly":
+elif mode == "Yearly Streams":
     selected_year = st.sidebar.selectbox(
         "Select Current Year",
         options=all_years,
@@ -136,24 +136,24 @@ def fetch_snapshot(cur_date, prev_date, mode):
     try:
         with sqlite3.connect(DB_PATH) as conn:
             # Determine the date ranges based on the mode
-            if mode == "Daily":
+            if mode == "Daily Streams":
                 cur_range = (cur_date, cur_date)
                 prev_range = (prev_date, prev_date)
-            elif mode == "Weekly":
+            elif mode == "Weekly Streams":
                 cur_range_start = cur_date - timedelta(days=cur_date.weekday())
                 cur_range_end = cur_range_start + timedelta(days=6)
                 prev_range_start = prev_date - timedelta(days=prev_date.weekday())
                 prev_range_end = prev_range_start + timedelta(days=6)
                 cur_range = (cur_range_start, cur_range_end)
                 prev_range = (prev_range_start, prev_range_end)
-            elif mode == "Monthly":
+            elif mode == "Monthly Streams":
                 cur_range_start = cur_date.replace(day=1)
                 cur_range_end = cur_date.replace(day=calendar.monthrange(cur_date.year, cur_date.month)[1])
                 prev_range_start = prev_date.replace(day=1)
                 prev_range_end = prev_date.replace(day=calendar.monthrange(prev_date.year, prev_date.month)[1])
                 cur_range = (cur_range_start, cur_range_end)
                 prev_range = (prev_range_start, prev_range_end)
-            elif mode == "Yearly":
+            elif mode == "Yearly Streams":
                 cur_range_start = cur_date.replace(month=1, day=1)
                 cur_range_end = cur_date.replace(month=12, day=31)
                 prev_range_start = prev_date.replace(month=1, day=1)
@@ -214,12 +214,12 @@ def fetch_snapshot(cur_date, prev_date, mode):
 df = fetch_snapshot(selected_date, selected_lookback_date, mode)
 
 # --- Sidebar display logic ---
-if mode == "Daily":
+if mode == "Daily Streams":
     st.sidebar.write(
         f"Comparing {selected_date.strftime('%m/%d/%Y')} vs "
         f"{selected_lookback_date.strftime('%m/%d/%Y')}"
     )
-elif mode == "Weekly":
+elif mode == "Weekly Streams":
     start_cur = selected_date - timedelta(days=selected_date.weekday())
     end_cur = start_cur + timedelta(days=6)
     start_prev = selected_lookback_date - timedelta(days=selected_lookback_date.weekday())
@@ -228,7 +228,7 @@ elif mode == "Weekly":
         f"Comparing {start_cur.strftime('%m/%d/%Y')} to {end_cur.strftime('%m/%d/%Y')} vs "
         f"{start_prev.strftime('%m/%d/%Y')} to {end_prev.strftime('%m/%d/%Y')}"
     )
-elif mode == "Monthly":
+elif mode == "Monthly Streams":
     start_cur = selected_date.replace(day=1)
     end_cur = selected_date.replace(day=calendar.monthrange(selected_date.year, selected_date.month)[1])
     start_prev = selected_lookback_date.replace(day=1)
@@ -237,7 +237,7 @@ elif mode == "Monthly":
         f"Comparing {start_cur.strftime('%B %Y')} vs "
         f"{start_prev.strftime('%B %Y')}"
     )
-elif mode == "Yearly":
+elif mode == "Yearly Streams":
     st.sidebar.write(
         f"Comparing {selected_date.strftime('%Y')} vs "
         f"{selected_lookback_date.strftime('%Y')}"
